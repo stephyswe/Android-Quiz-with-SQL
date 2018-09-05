@@ -6,14 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.example.sthal.quizwithsql.QuizContract.QuestionsTable;
+import com.example.sthal.quizwithsql.QuizContract.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuizDbHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "Quiz.db";
+public class QuizDbHelper extends SQLiteOpenHelper {
+    private static final String DATABASE_NAME = "MyAwesomeQuiz.db";
     private static final int DATABASE_VERSION = 1;
 
     private SQLiteDatabase db;
@@ -22,7 +22,6 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // First time access database, can access database outside method
     @Override
     public void onCreate(SQLiteDatabase db) {
         this.db = db;
@@ -45,71 +44,49 @@ public class QuizDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + QuestionsTable.TABLE_NAME);
         onCreate(db);
-
     }
 
     private void fillQuestionsTable() {
         Question q1 = new Question("A is correct", "A", "B", "C", 1);
         addQuestion(q1);
-
         Question q2 = new Question("B is correct", "A", "B", "C", 2);
-        addQuestion(q1);
-
+        addQuestion(q2);
         Question q3 = new Question("C is correct", "A", "B", "C", 3);
-        addQuestion(q1);
-
+        addQuestion(q3);
         Question q4 = new Question("A is correct again", "A", "B", "C", 1);
-        addQuestion(q1);
-
+        addQuestion(q4);
         Question q5 = new Question("B is correct again", "A", "B", "C", 2);
-        addQuestion(q1);
+        addQuestion(q5);
     }
 
     private void addQuestion(Question question) {
         ContentValues cv = new ContentValues();
-
-        // Adds question + 3 options + answer
         cv.put(QuestionsTable.COLUMN_QUESTION, question.getQuestion());
         cv.put(QuestionsTable.COLUMN_OPTION1, question.getOption1());
         cv.put(QuestionsTable.COLUMN_OPTION2, question.getOption2());
         cv.put(QuestionsTable.COLUMN_OPTION3, question.getOption3());
         cv.put(QuestionsTable.COLUMN_ANSWER_NR, question.getAnswerNr());
-
-        // nullColumnHack - to insert NULL values
         db.insert(QuestionsTable.TABLE_NAME, null, cv);
     }
 
-    // retrieve saved questions
     public List<Question> getAllQuestions() {
         List<Question> questionList = new ArrayList<>();
-
-        // reference to database
         db = getReadableDatabase();
-
-        //selectArgs is same as placeholders
         Cursor c = db.rawQuery("SELECT * FROM " + QuestionsTable.TABLE_NAME, null);
 
-        // if entry exists
         if (c.moveToFirst()) {
             do {
                 Question question = new Question();
-
-                // Get question out from database
                 question.setQuestion(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_QUESTION)));
                 question.setOption1(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION1)));
                 question.setOption2(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION2)));
                 question.setOption3(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION3)));
-                question.setQuestion(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_ANSWER_NR)));
-
-                // Add to QuestionList
+                question.setAnswerNr(c.getInt(c.getColumnIndex(QuestionsTable.COLUMN_ANSWER_NR)));
                 questionList.add(question);
-
             } while (c.moveToNext());
         }
 
         c.close();
         return questionList;
     }
-
-
 }
