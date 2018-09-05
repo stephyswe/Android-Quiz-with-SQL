@@ -2,10 +2,14 @@ package com.example.sthal.quizwithsql;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.sthal.quizwithsql.QuizContract.QuestionsTable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class QuizDbHelper extends SQLiteOpenHelper {
 
@@ -73,6 +77,38 @@ public class QuizDbHelper extends SQLiteOpenHelper {
 
         // nullColumnHack - to insert NULL values
         db.insert(QuestionsTable.TABLE_NAME, null, cv);
+    }
+
+    // retrieve saved questions
+    public List<Question> getAllQuestions() {
+        List<Question> questionList = new ArrayList<>();
+
+        // reference to database
+        db = getReadableDatabase();
+
+        //selectArgs is same as placeholders
+        Cursor c = db.rawQuery("SELECT * FROM " + QuestionsTable.TABLE_NAME, null);
+
+        // if entry exists
+        if (c.moveToFirst()) {
+            do {
+                Question question = new Question();
+
+                // Get question out from database
+                question.setQuestion(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_QUESTION)));
+                question.setOption1(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION1)));
+                question.setOption2(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION2)));
+                question.setOption3(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_OPTION3)));
+                question.setQuestion(c.getString(c.getColumnIndex(QuestionsTable.COLUMN_ANSWER_NR)));
+
+                // Add to QuestionList
+                questionList.add(question);
+
+            } while (c.moveToNext());
+        }
+
+        c.close();
+        return questionList;
     }
 
 
